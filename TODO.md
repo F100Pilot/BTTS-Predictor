@@ -5,11 +5,17 @@
 > versão no `CHANGELOG.md`. Para bugs, ver [`TESTING.md`](./TESTING.md).
 > Plano de mais alto nível em [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
-_Última atualização: 2026-07-09 (v0.3.7.0)._
+_Última atualização: 2026-10-24 (v0.3.9.0)._
 
 ## Em curso / próximo
 
-- [ ] Nada agendado de momento — ver as ideias abaixo.
+- [ ] **Confirmar o formato das odds Over/Under 2.5** do Flashscore: correr
+      Definições → "Testar ligação" e ver a linha "Formato OVER_UNDER"; se o parser
+      estrito não ler a linha 2.5, ajustá-lo a esse formato (v0.3.9.0).
+- [ ] Filtro "Só com valor" do painel ainda usa só o edge do BTTS — torná-lo
+      sensível ao mercado selecionado (O/U, 1X2).
+- [ ] **Calibração do tier de topo** ("Muito Forte" acerta menos do que
+      "Forte") + aviso quando BTTS e O/U se contradizem + calibração do 1X2.
 
 ## Melhorias ao modelo de previsão (discutidas, não selecionadas)
 
@@ -48,6 +54,10 @@ Empirical-Bayes shrinkage (v0.2.46); Dixon-Coles nos mercados O/U 2.5 + 1X2
 - [ ] Apagar o projeto Cloudflare Pages `btts-predictor` (sem acesso a partir do agente).
 
 ## Concluído recentemente
+
+- [x] **Odds em todos os mercados**: 1X2 da lista do dia (grátis), BTTS + O/U 2.5
+      via `getOdds` na análise; valor por seleção e Martingale pré-preenchido (v0.3.9.0).
+- [x] CI em Node 22 / actions v5 e merge só com CI verde (pós-v0.3.8.0).
 
 - [x] **Dixon-Coles** nos mercados Over/Under 2.5 e 1X2 (v0.3.7.0).
 - [x] **Renovação visual** (FotMob/Sofascore): Inter + cores com significado,

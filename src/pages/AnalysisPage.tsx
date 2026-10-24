@@ -179,10 +179,12 @@ export function AnalysisPage() {
         }
         // Auto-fill bookmaker odds when the provider supports them and the
         // fixture doesn't already carry them (powers value/calibration cards).
+        // BTTS + Over/Under 2.5 come from one odds request; 1X2 odds usually
+        // already ride on the fixture (day list) and are kept by the merge.
         let enriched = fixture;
         if (!fixture.odds?.bttsYes && !fixture.odds?.bttsNo) {
           const odds = await data.getOdds(fixture.id).catch(() => null);
-          if (odds && (odds.bttsYes || odds.bttsNo)) {
+          if (odds && Object.keys(odds).length > 0) {
             enriched = { ...fixture, odds: { ...fixture.odds, ...odds } };
           }
         }
@@ -433,9 +435,8 @@ export function AnalysisPage() {
           matchLabel: `${fixture.home.name} vs ${fixture.away.name}`,
           fixtureId: fixture.id,
           kickoff: fixture.date,
-          oddsYes: fixture.odds?.bttsYes,
-          oddsNo: fixture.odds?.bttsNo,
-          defaultSelection: prediction.probYes >= 0.5 ? 'SIM' : 'NÃO',
+          odds: fixture.odds,
+          defaultSelection: pick?.side,
         }}
       />
 

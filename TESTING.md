@@ -73,7 +73,10 @@ Após mudanças de UI/dados, verificar no browser (`npm run dev`):
    esquerda + mini-barra de probabilidade com a cor do resultado (verde/vermelho/
    neutro) + emblemas das equipas; navegação inferior em grelha de 6 (sem scroll)
    com traço no separador ativo; seletor de mercado fixo ao deslizar (claro/escuro).
-7. **PWA** — instala, funciona offline, aviso de atualização.
+7. **Odds** — numa análise: "Outros mercados" mostra `@ odd · Valor` no 1X2 (e O/U
+   quando disponível); o pop-up do Martingale vem com a odd preenchida. Em
+   Definições → "Testar ligação": linha "Odds (mercados)" com ✓/✗ por mercado.
+8. **PWA** — instala, funciona offline, aviso de atualização.
 
 ---
 

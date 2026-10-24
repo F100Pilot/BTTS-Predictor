@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { marketPick, marketActualSide, marketPickCorrect } from './markets';
+import { marketPick, marketActualSide, marketPickCorrect, sideOdd, pickEdge } from './markets';
 import type { BttsPrediction, MarketPrediction } from '@/domain/types';
 
 const btts = (probYes: number): BttsPrediction => ({
@@ -68,5 +68,39 @@ describe('marketActualSide / marketPickCorrect', () => {
     expect(marketPickCorrect('btts', 'SIM', 2, 1)).toBe(true);
     expect(marketPickCorrect('ou25', 'Under 2.5', 2, 1)).toBe(false);
     expect(marketPickCorrect('x12', 'Fora', 1, 2)).toBe(true);
+  });
+});
+
+describe('sideOdd / pickEdge', () => {
+  const odds = {
+    bttsYes: 1.8,
+    bttsNo: 2.0,
+    over25: 1.9,
+    under25: 1.95,
+    home: 2.2,
+    draw: 3.3,
+    away: 3.4,
+  };
+
+  it('maps every market side to its bookmaker odd', () => {
+    expect(sideOdd('SIM', odds)).toBe(1.8);
+    expect(sideOdd('NÃO', odds)).toBe(2.0);
+    expect(sideOdd('Over 2.5', odds)).toBe(1.9);
+    expect(sideOdd('Under 2.5', odds)).toBe(1.95);
+    expect(sideOdd('Casa', odds)).toBe(2.2);
+    expect(sideOdd('Empate', odds)).toBe(3.3);
+    expect(sideOdd('Fora', odds)).toBe(3.4);
+  });
+
+  it('returns undefined for unknown sides, missing or invalid odds', () => {
+    expect(sideOdd('Over 1.5', odds)).toBeUndefined();
+    expect(sideOdd('Casa', undefined)).toBeUndefined();
+    expect(sideOdd('Casa', { home: 1 })).toBeUndefined();
+  });
+
+  it('computes edge as prob·odd − 1, null without an odd', () => {
+    expect(pickEdge(0.5, 2.2)).toBeCloseTo(0.1, 4);
+    expect(pickEdge(0.4, 2.0)).toBeCloseTo(-0.2, 4);
+    expect(pickEdge(0.6, undefined)).toBeNull();
   });
 });

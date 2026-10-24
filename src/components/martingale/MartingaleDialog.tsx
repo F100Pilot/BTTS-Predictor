@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label';
 import { useMartingale } from '@/store/martingaleStore';
 import { useMarket } from '@/store/marketStore';
 import { globalSeries } from '@/core/martingale/martingale';
-import { MARKET_SIDES, marketLabel } from '@/core/markets/markets';
+import { MARKET_SIDES, marketLabel, sideOdd } from '@/core/markets/markets';
+import type { FixtureOdds } from '@/domain/types';
 
 const EUR = (n: number): string => `€${n.toFixed(2)}`;
 
@@ -22,9 +23,10 @@ export interface MartingaleGame {
   matchLabel: string;
   fixtureId?: string;
   kickoff?: string;
-  oddsYes?: number;
-  oddsNo?: number;
-  defaultSelection?: 'SIM' | 'NÃO';
+  /** Bookmaker odds for the fixture (any market); prefill the odd per side. */
+  odds?: FixtureOdds;
+  /** Suggested side for the active market (the model's pick), e.g. "Over 2.5". */
+  defaultSelection?: string;
 }
 
 /**
@@ -61,24 +63,26 @@ export function MartingaleDialog({
   const market = useMarket((s) => s.market);
   const sides = MARKET_SIDES[market];
 
-  // For BTTS we can prefill the odd from the fixture; other markets are manual.
-  const bttsOdd = (side: string): number | undefined =>
-    market === 'btts' ? (side === 'SIM' ? game.oddsYes : game.oddsNo) : undefined;
+  // Prefill the odd from the fixture's bookmaker odds when known (any market);
+  // otherwise the field stays empty for manual entry.
+  const knownOdd = (side: string): number | undefined => sideOdd(side, game.odds);
+  const initialSide = (): string =>
+    (game.defaultSelection && sides.includes(game.defaultSelection)
+      ? game.defaultSelection
+      : sides[0]) ?? '';
 
-  const [selection, setSelection] = useState<string>(
-    (market === 'btts' ? game.defaultSelection : undefined) ?? sides[0] ?? '',
-  );
+  const [selection, setSelection] = useState<string>(initialSide);
   const [odds, setOdds] = useState(() => {
-    const o = bttsOdd(selection);
+    const o = knownOdd(initialSide());
     return o ? o.toFixed(2) : '';
   });
   const [added, setAdded] = useState(false);
 
   // Reset the side/odd when the active market changes while the pop-up is open.
   useEffect(() => {
-    const first = (market === 'btts' ? game.defaultSelection : undefined) ?? sides[0] ?? '';
+    const first = initialSide();
     setSelection(first);
-    const o = bttsOdd(first);
+    const o = knownOdd(first);
     setOdds(o ? o.toFixed(2) : '');
     setAdded(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,8 +98,8 @@ export function MartingaleDialog({
 
   const pickSide = (side: string): void => {
     setSelection(side);
-    const o = bttsOdd(side);
-    if (o) setOdds(o.toFixed(2));
+    const o = knownOdd(side);
+    setOdds(o ? o.toFixed(2) : '');
   };
 
   const handleAdd = (): void => {
