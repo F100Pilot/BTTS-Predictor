@@ -1,4 +1,4 @@
-import type { BttsPrediction, MarketPrediction } from '@/domain/types';
+import type { BttsPrediction, FixtureOdds, MarketPrediction } from '@/domain/types';
 
 /** The betting markets the app can show/track, kept strictly separate. */
 export type MarketKey = 'btts' | 'ou25' | 'x12';
@@ -86,4 +86,28 @@ export function marketPickCorrect(
   awayGoals: number,
 ): boolean {
   return pickSide === marketActualSide(market, homeGoals, awayGoals);
+}
+
+/** Which FixtureOdds field holds the bookmaker odd of each market side. */
+const SIDE_ODDS_FIELD: Record<string, keyof FixtureOdds> = {
+  SIM: 'bttsYes',
+  NÃO: 'bttsNo',
+  'Over 2.5': 'over25',
+  'Under 2.5': 'under25',
+  Casa: 'home',
+  Empate: 'draw',
+  Fora: 'away',
+};
+
+/** Bookmaker decimal odd for a market side (e.g. "Over 2.5"), if known. */
+export function sideOdd(side: string, odds: FixtureOdds | undefined): number | undefined {
+  const field = SIDE_ODDS_FIELD[side];
+  const v = field ? odds?.[field] : undefined;
+  return typeof v === 'number' && v > 1 ? v : undefined;
+}
+
+/** Expected value per unit staked for a pick at a given odd: prob·odd − 1. */
+export function pickEdge(probability: number, odd: number | undefined): number | null {
+  if (odd === undefined) return null;
+  return Math.round((probability * odd - 1) * 10000) / 10000;
 }

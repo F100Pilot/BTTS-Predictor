@@ -6,6 +6,7 @@
 
 import { parseFlashscoreMatches, type FlashFixture } from './flashscoreMatches';
 import { flashscoreFixtureMatches, type FixtureTeamMatches } from './flashscoreAnalysis';
+import { parseFlashscoreMarketOdds, type FlashMarketOdds } from './flashscoreOdds';
 import { proxyFor } from './corsProxy';
 import type { Fixture, LiveMatch, Team } from '@/domain/types';
 
@@ -101,7 +102,28 @@ export function flashFixtureToFixture(f: FlashFixture): Fixture {
     },
     home: { id: f.home.id, name: f.home.name },
     away: { id: f.away.id, name: f.away.name },
+    // The day list already carries 1X2 odds — keep them (no extra request).
+    ...(f.odds ? { odds: { home: f.odds.home, draw: f.odds.draw, away: f.odds.away } } : {}),
   };
+}
+
+/** Raw "match odds" payload (all bookmakers / markets) for one match. */
+export async function fetchFlashscoreOddsRaw(
+  rapidApiKey: string,
+  corsProxy: string,
+  matchId: string,
+): Promise<unknown> {
+  const target = `https://${HOST}/api/flashscore/v2/matches/odds?match_id=${encodeURIComponent(matchId)}&geo_ip_code=US`;
+  return getJson(target, rapidApiKey, corsProxy);
+}
+
+/** BTTS + Over/Under 2.5 odds for one match (averaged across bookmakers). */
+export async function fetchFlashscoreOdds(
+  rapidApiKey: string,
+  corsProxy: string,
+  matchId: string,
+): Promise<FlashMarketOdds | null> {
+  return parseFlashscoreMarketOdds(await fetchFlashscoreOddsRaw(rapidApiKey, corsProxy, matchId));
 }
 
 /** Adapt a Flashscore fixture to the app's LiveMatch shape (for the live page). */

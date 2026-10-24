@@ -20,6 +20,28 @@ Sempre que mudar a versão em `src/version.ts`, acrescente uma entrada abaixo.
 
 ---
 
+## 0.3.9.0
+
+- **Odds em todos os mercados** (antes só BTTS, e mesmo esse só na Calculadora):
+  - **1X2**: a lista de jogos do dia já trazia as odds `{1, X, 2}`, mas o
+    `flashFixtureToFixture` descartava-as — passam a ficar na fixture (0
+    pedidos extra).
+  - **BTTS + Over/Under 2.5**: o `FlashscoreProvider` passa a implementar
+    `getOdds` (1 pedido ao endpoint `matches/odds`, em cache 30 min), usado ao
+    abrir a análise. `parseFlashscoreMarketOdds` lê BTTS e O/U 2.5 de uma só
+    resposta; o O/U é **estrito** (linha rotulada OVER/UNDER com total 2.5 —
+    formato inesperado ⇒ sem odd, nunca odd trocada).
+- `FixtureOdds` (domínio) cobre BTTS / O-U 2.5 / 1X2; helpers `sideOdd` e
+  `pickEdge` em `core/markets`.
+- UI: "Outros mercados" mostra odd + valor por seleção; o "+X%" dos cartões
+  passa a existir no 1X2; o pop-up do Martingale pré-preenche a odd e a
+  seleção sugerida em qualquer mercado.
+- Diagnóstico ("Testar ligação"): verificação das odds (BTTS/O-U/1X2) e
+  formato das linhas OVER_UNDER / HOME_DRAW_AWAY (só nomes/etiquetas, sem
+  preços) para confirmar o formato real.
+- Efeito colateral: a "calibração com odds" do BTTS (Pesos do modelo) passa a
+  ter odds reais na análise; com o valor por omissão (0) nada muda.
+
 ## 0.3.8.0
 
 - **Filtro "Só previsões fortes"** na página de Jogos: a lista passa a mostrar

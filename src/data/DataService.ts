@@ -179,7 +179,7 @@ export class DataService {
     );
   }
 
-  /** Bookmaker BTTS odds for a fixture (primary provider only). Null if unavailable. */
+  /** Bookmaker odds for a fixture (primary provider only). Null if unavailable. */
   async getOdds(fixtureId: string): Promise<BttsOdds | null> {
     const provider = getProvider(this.providerId);
     const ctx = this.ctxFor(provider.id);

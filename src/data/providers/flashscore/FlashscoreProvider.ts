@@ -1,6 +1,7 @@
-import type { Fixture, LiveMatch, MatchResult } from '@/domain/types';
+import type { Fixture, FixtureOdds, LiveMatch, MatchResult } from '@/domain/types';
 import type { DataProvider, ProviderCapabilities, ProviderContext } from '../types';
 import {
+  fetchFlashscoreOdds,
   fetchFlashscoreByDate,
   fetchFlashscoreLive,
   fetchFlashscoreFixtureMatches,
@@ -25,6 +26,7 @@ export class FlashscoreProvider implements DataProvider {
     fixtures: true,
     teamHistory: true,
     headToHead: true,
+    odds: true,
     worksOffline: false,
   };
 
@@ -55,6 +57,12 @@ export class FlashscoreProvider implements DataProvider {
       fixture.home,
       fixture.away,
     );
+  }
+
+  /** BTTS + Over/Under 2.5 odds for a match (1 request, averaged across
+   * bookmakers). 1X2 odds come for free on the fixture from the day list. */
+  async getOdds(fixtureId: string, ctx: ProviderContext): Promise<FixtureOdds | null> {
+    return fetchFlashscoreOdds(ctx.apiKey!, ctx.corsProxy ?? '', fixtureId);
   }
 
   // Flashscore is keyed by match, not by team id — the per-team lookups aren't

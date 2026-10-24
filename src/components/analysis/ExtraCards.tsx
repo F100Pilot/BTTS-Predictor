@@ -4,33 +4,48 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { computeValue } from '@/core/value/value';
+import { sideOdd, pickEdge } from '@/core/markets/markets';
 import { toPercent, round } from '@/lib/math';
 
 export function MarketsCard({ markets, fixture }: { markets: MarketPrediction; fixture: Fixture }) {
-  const rows: Array<{ label: string; value: string }> = [
-    { label: 'Over 2.5 golos', value: toPercent(markets.over25) },
-    { label: 'Under 2.5 golos', value: toPercent(markets.under25) },
-    { label: `Vitória ${fixture.home.name}`, value: toPercent(markets.homeWin) },
-    { label: 'Empate', value: toPercent(markets.draw) },
-    { label: `Vitória ${fixture.away.name}`, value: toPercent(markets.awayWin) },
+  const rows: Array<{ label: string; side: string; prob: number }> = [
+    { label: 'Over 2.5 golos', side: 'Over 2.5', prob: markets.over25 },
+    { label: 'Under 2.5 golos', side: 'Under 2.5', prob: markets.under25 },
+    { label: `Vitória ${fixture.home.name}`, side: 'Casa', prob: markets.homeWin },
+    { label: 'Empate', side: 'Empate', prob: markets.draw },
+    { label: `Vitória ${fixture.away.name}`, side: 'Fora', prob: markets.awayWin },
   ];
+  const anyOdds = rows.some((r) => sideOdd(r.side, fixture.odds) !== undefined);
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">Outros mercados</CardTitle>
         <CardDescription>
-          Modelo de Poisson · golos esperados {round(markets.lambdaHome, 2)} –{' '}
+          Modelo de Poisson (Dixon-Coles) · golos esperados {round(markets.lambdaHome, 2)} –{' '}
           {round(markets.lambdaAway, 2)}
+          {anyOdds && ' · com a odd média das casas e o valor (verde = aposta vantajosa)'}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
-          {rows.map((r) => (
-            <div key={r.label} className="flex flex-col">
-              <span className="text-xs text-muted-foreground">{r.label}</span>
-              <span className="font-semibold">{r.value}</span>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+          {rows.map((r) => {
+            const odd = sideOdd(r.side, fixture.odds);
+            const edge = pickEdge(r.prob, odd);
+            return (
+              <div key={r.label} className="flex flex-col">
+                <span className="text-xs text-muted-foreground">{r.label}</span>
+                <span className="font-semibold tabular-nums">{toPercent(r.prob)}</span>
+                {odd !== undefined && edge !== null && (
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    @ {odd.toFixed(2)} ·{' '}
+                    <span className={edge > 0 ? 'font-semibold text-success' : ''}>
+                      {edge > 0 ? `Valor +${round(edge * 100, 1)}%` : 'Sem valor'}
+                    </span>
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

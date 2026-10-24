@@ -33,6 +33,17 @@ export interface MatchResult {
   awayGoals: number;
 }
 
+/** Bookmaker decimal odds for a fixture, per market side (all optional). */
+export interface FixtureOdds {
+  bttsYes?: number;
+  bttsNo?: number;
+  over25?: number;
+  under25?: number;
+  home?: number;
+  draw?: number;
+  away?: number;
+}
+
 /** A scheduled match (today / upcoming). */
 export interface Fixture {
   id: string;
@@ -40,11 +51,9 @@ export interface Fixture {
   competition: Competition;
   home: Team;
   away: Team;
-  /** Optional bookmaker odds (informational only — not used by the engine). */
-  odds?: {
-    bttsYes?: number;
-    bttsNo?: number;
-  };
+  /** Optional bookmaker odds (decimal) per market. Used for value/edge and to
+   * prefill the Martingale pop-up; BTTS odds can also feed odds calibration. */
+  odds?: FixtureOdds;
 }
 
 /** A match currently in play (live score). */

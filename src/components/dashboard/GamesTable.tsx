@@ -7,7 +7,13 @@ import { IconAction } from '@/components/common/IconAction';
 import { TeamAvatar } from '@/components/common/TeamAvatar';
 import { TierBadge, ProbabilityMeter } from '@/components/common/PredictionWidgets';
 import { tierForProbability } from '@/core/classification/classification';
-import { marketPick, type MarketKey, type MarketPick } from '@/core/markets/markets';
+import {
+  marketPick,
+  pickEdge,
+  sideOdd,
+  type MarketKey,
+  type MarketPick,
+} from '@/core/markets/markets';
 import { useMarket } from '@/store/marketStore';
 import { formatTime } from '@/lib/format';
 import { toPercent, round } from '@/lib/math';
@@ -102,8 +108,14 @@ function GameBanner({
       : pick?.tone === 'neg'
         ? 'before:bg-destructive'
         : 'before:bg-border';
-  // The value edge ("+X%") only applies to BTTS (the only market with odds).
-  const edge = market === 'btts' ? rowEdge(row) : null;
+  // Value edge ("+X%"): BTTS keeps its best-side edge; other markets use the
+  // pick's own odd when the fixture carries it (1X2 odds ride on the day list).
+  const edge =
+    market === 'btts'
+      ? rowEdge(row)
+      : pick
+        ? pickEdge(pick.probability, sideOdd(pick.side, fixture.odds))
+        : null;
   // Tier: BTTS uses the calibrated stored tier; other markets classify the pick.
   const tier =
     market === 'btts'

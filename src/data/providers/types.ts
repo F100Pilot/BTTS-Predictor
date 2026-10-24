@@ -1,16 +1,13 @@
-import type { Fixture, LiveMatch, MatchResult, SeasonStats } from '@/domain/types';
+import type { Fixture, FixtureOdds, LiveMatch, MatchResult, SeasonStats } from '@/domain/types';
 
-/** BTTS market odds returned by a provider (decimal odds). */
-export interface BttsOdds {
-  bttsYes?: number;
-  bttsNo?: number;
-}
+/** Bookmaker odds returned by a provider (decimal) — BTTS, Over/Under 2.5, 1X2. */
+export type BttsOdds = FixtureOdds;
 
 export interface ProviderCapabilities {
   fixtures: boolean;
   teamHistory: boolean;
   headToHead: boolean;
-  /** True if the provider can supply bookmaker BTTS odds. */
+  /** True if the provider can supply bookmaker odds for a fixture. */
   odds?: boolean;
   /** True if usable without any user-supplied API key (but may need a proxy). */
   keyless?: boolean;
@@ -50,7 +47,7 @@ export interface DataProvider {
   getMatchResultById?(matchId: string, ctx: ProviderContext): Promise<MatchResult | null>;
   /** Optional: fetch matches currently in play (live scores). */
   getLiveMatches?(ctx: ProviderContext): Promise<LiveMatch[]>;
-  /** Optional: fetch bookmaker BTTS odds for a single fixture. */
+  /** Optional: fetch bookmaker odds (BTTS / Over-Under 2.5 / 1X2) for one fixture. */
   getOdds?(fixtureId: string, ctx: ProviderContext): Promise<BttsOdds | null>;
   /**
    * Optional: fetch season-wide team statistics (goals, clean sheets, etc.).
