@@ -23,8 +23,13 @@ fonte de dados única: **Flashscore (RapidAPI)** via Proxy CORS (Cloudflare Work
 ## Regras de trabalho
 
 1. **Nunca fazer push direto para `main`** (está bloqueado). Fluxo: criar branch →
-   commit → abrir PR (draft) → marcar ready → **squash-merge** → apagar branch local →
-   `git pull origin main`.
+   commit → abrir PR (draft) → marcar ready → **esperar o CI do PR ficar verde** →
+   **squash-merge** → apagar branch local → `git pull origin main`.
+   Nunca fazer merge com o CI ainda a correr: o CI corre `npm ci` (só do lockfile) e
+   apanha o que o build local não apanha — ex.: a v0.3.5.0 não publicou porque uma
+   dependência estava só em `node_modules` e o merge foi feito antes do CI terminar.
+   Preferir auto-merge (merge automático quando o CI passa); se não estiver
+   disponível, verificar os check runs do PR antes do merge.
 2. **Versão**: a fonte de verdade é [`src/version.ts`](./src/version.ts)
    (`0.MAIOR.MENOR.CORREÇÃO`). Em cada alteração funcional:
    - bump `APP_VERSION` + nova entrada no topo de `WHATS_NEW`;
