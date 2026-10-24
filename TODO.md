@@ -5,7 +5,7 @@
 > versão no `CHANGELOG.md`. Para bugs, ver [`TESTING.md`](./TESTING.md).
 > Plano de mais alto nível em [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
-_Última atualização: 2026-10-24 (v0.3.9.0)._
+_Última atualização: 2026-10-24 (v0.3.10.0)._
 
 ## Em curso / próximo
 
@@ -14,8 +14,10 @@ _Última atualização: 2026-10-24 (v0.3.9.0)._
       estrito não ler a linha 2.5, ajustá-lo a esse formato (v0.3.9.0).
 - [ ] Filtro "Só com valor" do painel ainda usa só o edge do BTTS — torná-lo
       sensível ao mercado selecionado (O/U, 1X2).
-- [ ] **Calibração do tier de topo** ("Muito Forte" acerta menos do que
-      "Forte") + aviso quando BTTS e O/U se contradizem + calibração do 1X2.
+- [ ] **Calibração do 1X2** (3 vias, multinomial) — só quando houver jogos 1X2
+      liquidados por score suficientes (hoje há poucos).
+- [ ] Rever os tiers de topo quando o veredicto do Histórico (v0.3.10.0) marcar
+      "otimista"/"pessimista" com ≥20 jogos — até lá a diferença é ruído.
 
 ## Melhorias ao modelo de previsão (discutidas, não selecionadas)
 
@@ -54,6 +56,9 @@ Empirical-Bayes shrinkage (v0.2.46); Dixon-Coles nos mercados O/U 2.5 + 1X2
 - [ ] Apagar o projeto Cloudflare Pages `btts-predictor` (sem acesso a partir do agente).
 
 ## Concluído recentemente
+
+- [x] Calibração por tier com intervalo de Wilson + veredicto; BTTS pela matriz
+      Dixon-Coles e aviso de divergência entre modelos (v0.3.10.0).
 
 - [x] **Odds em todos os mercados**: 1X2 da lista do dia (grátis), BTTS + O/U 2.5
       via `getOdds` na análise; valor por seleção e Martingale pré-preenchido (v0.3.9.0).

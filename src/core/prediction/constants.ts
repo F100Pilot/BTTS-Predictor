@@ -22,6 +22,13 @@ export const MARKETS_HOME_ADVANTAGE = 1.1;
 export const DIXON_COLES_RHO = -0.13;
 
 /**
+ * Gap (0..1) between the factor-based BTTS probability and the Dixon-Coles
+ * score-matrix BTTS above which the analysis warns that the two models
+ * disagree — a sign the game is ambiguous and the prediction less reliable.
+ */
+export const MODEL_DIVERGENCE_THRESHOLD = 0.15;
+
+/**
  * Half-life (in days) for the recency weighting of recent matches and H2H: a
  * result this old counts half as much as a brand-new one. ~6 months keeps a
  * full season relevant while clearly favouring current form.

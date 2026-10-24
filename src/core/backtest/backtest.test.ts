@@ -10,7 +10,10 @@ import {
   confidenceBandsOutcomes,
   reliabilityOutcomes,
   IDENTITY_PLATT,
+  wilsonInterval,
+  calibrationVerdict,
   type Sample,
+  type TierEval,
   type OutcomeSample,
 } from './backtest';
 
@@ -138,5 +141,58 @@ describe('fitPlatt / applyPlatt', () => {
 
   it('identity mapping leaves probabilities unchanged', () => {
     expect(applyPlatt(0.73, IDENTITY_PLATT)).toBeCloseTo(0.73, 5);
+  });
+});
+
+describe('wilsonInterval', () => {
+  it('matches the 95% Wilson interval for 13/18', () => {
+    const { low, high } = wilsonInterval(13, 18);
+    expect(low).toBeCloseTo(0.491, 2);
+    expect(high).toBeCloseTo(0.875, 2);
+  });
+
+  it('narrows with more data and stays within [0, 1]', () => {
+    const small = wilsonInterval(7, 10);
+    const big = wilsonInterval(700, 1000);
+    expect(big.high - big.low).toBeLessThan(small.high - small.low);
+    const all = wilsonInterval(5, 5);
+    expect(all.high).toBeLessThanOrEqual(1);
+    expect(wilsonInterval(0, 0)).toEqual({ low: 0, high: 1 });
+  });
+});
+
+describe('evaluate — confidence + calibration verdict', () => {
+  it('averages the picked-side probability (not P(YES))', () => {
+    const samples: Sample[] = [
+      { probYes: 0.8, tier: 'strong', outcome: 1 },
+      { probYes: 0.3, tier: 'strong', outcome: 0 },
+    ];
+    // picked sides: 0.8 (SIM) and 0.7 (NÃO) → 75%, while mean P(YES) is 55%.
+    const { overall } = evaluate(samples);
+    expect(overall.avgConfidence).toBe(75);
+    expect(overall.avgPredicted).toBe(55);
+  });
+
+  const tier = (over: Partial<TierEval>): TierEval => ({
+    tier: 'very-strong',
+    n: 40,
+    accuracy: 72,
+    brier: 0.2,
+    avgPredicted: 80,
+    actualRate: 70,
+    avgConfidence: 80,
+    ciLow: 57,
+    ciHigh: 84,
+    ...over,
+  });
+
+  it('only flags over/under-confidence outside the 95% interval', () => {
+    expect(calibrationVerdict(tier({}))).toBe('calibrated'); // 80 within [57, 84]
+    expect(calibrationVerdict(tier({ avgConfidence: 90 }))).toBe('overconfident');
+    expect(calibrationVerdict(tier({ avgConfidence: 50 }))).toBe('underconfident');
+  });
+
+  it('refuses to judge small samples', () => {
+    expect(calibrationVerdict(tier({ n: 18, avgConfidence: 95 }))).toBe('small-sample');
   });
 });

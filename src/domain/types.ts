@@ -193,6 +193,10 @@ export interface MarketPrediction {
   homeWin: number;
   draw: number;
   awayWin: number;
+  /** P(both teams score) read off the same Dixon-Coles score matrix — an
+   * independent second opinion to the factor-based BTTS model. Optional:
+   * predictions cached before v0.3.10.0 do not carry it. */
+  bttsYes?: number;
 }
 
 /** Everything the analysis page needs for a single fixture. */

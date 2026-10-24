@@ -80,4 +80,14 @@ describe('predictMarkets', () => {
       expect(p).toBeLessThanOrEqual(1);
     }
   });
+
+  it('derives BTTS from the score matrix: in [0, 1] and higher for attacking teams', () => {
+    const low = predictMarkets(team(0.6, 0.5), team(0.5, 0.6));
+    const high = predictMarkets(team(2.4, 1.8), team(2.2, 2.0));
+    for (const m of [low, high]) {
+      expect(m.bttsYes).toBeGreaterThanOrEqual(0);
+      expect(m.bttsYes).toBeLessThanOrEqual(1);
+    }
+    expect(high.bttsYes!).toBeGreaterThan(low.bttsYes!);
+  });
 });

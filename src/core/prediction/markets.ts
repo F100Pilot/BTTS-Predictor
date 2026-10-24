@@ -60,6 +60,7 @@ export function predictMarkets(home: TeamStats, away: TeamStats): MarketPredicti
   let draw = 0;
   let awayWin = 0;
   let under = 0; // total goals ≤ 2
+  let both = 0; // both teams score (h ≥ 1 and a ≥ 1)
   let total = 0;
   for (let h = 0; h <= MAX; h++) {
     const ph = pmf(h, lambdaHome);
@@ -71,6 +72,7 @@ export function predictMarkets(home: TeamStats, away: TeamStats): MarketPredicti
       else if (h === a) draw += p;
       else awayWin += p;
       if (h + a <= 2) under += p;
+      if (h >= 1 && a >= 1) both += p;
     }
   }
   const t = total || 1;
@@ -84,5 +86,6 @@ export function predictMarkets(home: TeamStats, away: TeamStats): MarketPredicti
     homeWin: round(homeWin / t, 4),
     draw: round(draw / t, 4),
     awayWin: round(awayWin / t, 4),
+    bttsYes: round(clamp(both / t), 4),
   };
 }

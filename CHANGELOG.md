@@ -20,6 +20,22 @@ Sempre que mudar a versão em `src/version.ts`, acrescente uma entrada abaixo.
 
 ---
 
+## 0.3.10.0
+
+- **Calibração por classificação, com incerteza**: `TierEval` ganha
+  `avgConfidence` (média da probabilidade do lado escolhido — comparável ao
+  acerto; o antigo "Previsto méd." é a média de P(SIM), outra grandeza) e o
+  intervalo de Wilson a 95% (`ciLow`/`ciHigh`). `calibrationVerdict` só marca
+  "otimista"/"pessimista" quando a confiança sai do intervalo, e recusa julgar
+  com menos de 20 jogos (`MIN_TIER_SAMPLES`). A tabela do Histórico mostra
+  "acerto ±margem · prev. X% · veredicto" numa só coluna (cabe no telemóvel).
+- **Não se mexeu nos limiares dos tiers**: com 18 e 7 jogos nos dois tiers de
+  topo, a diferença observada não é estatisticamente significativa.
+- **BTTS pela matriz Dixon-Coles** (`MarketPrediction.bttsYes`, opcional) como
+  segunda opinião; a análise avisa "Modelos em desacordo" quando difere do
+  modelo de fatores em ≥15 p.p. (`MODEL_DIVERGENCE_THRESHOLD`). Sem bump de
+  `MODEL_VERSION` (as previsões existentes não mudam; a análise recalcula).
+
 ## 0.3.9.0
 
 - **Odds em todos os mercados** (antes só BTTS, e mesmo esse só na Calculadora):

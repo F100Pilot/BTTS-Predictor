@@ -16,6 +16,7 @@ import { toPercent } from '@/lib/math';
 import { tierMeta, tierForProbability } from '@/core/classification/classification';
 import { marketPick, marketLabel, type MarketKey } from '@/core/markets/markets';
 import { MarketSelector } from '@/components/common/MarketSelector';
+import { MODEL_DIVERGENCE_THRESHOLD } from '@/core/prediction/constants';
 import { createLogger } from '@/services/logger';
 import { EmptyState } from '@/components/common/States';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -347,6 +348,19 @@ export function AnalysisPage() {
                 </div>
               </div>
               <ProbabilityBar probYes={prediction.probYes} />
+              {bundle.markets.bttsYes !== undefined &&
+                Math.abs(prediction.probYes - bundle.markets.bttsYes) >=
+                  MODEL_DIVERGENCE_THRESHOLD && (
+                  <div className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                    <span>
+                      <span className="font-medium">Modelos em desacordo.</span> O modelo de fatores
+                      dá BTTS SIM {toPercent(prediction.probYes)}, mas os golos esperados (Poisson
+                      Dixon-Coles) apontam para {toPercent(bundle.markets.bttsYes)}. Jogo ambíguo —
+                      trata esta previsão com mais cautela.
+                    </span>
+                  </div>
+                )}
             </>
           ) : (
             <>
