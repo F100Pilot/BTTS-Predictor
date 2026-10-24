@@ -14,6 +14,43 @@ export interface TierEval {
   brier: number; // mean squared error of probYes vs outcome (lower better)
   avgPredicted: number; // mean predicted P(YES)
   actualRate: number; // observed rate of BTTS=YES
+  /** Mean probability of the PICKED side (max(p, 1-p)) — comparable to accuracy. */
+  avgConfidence: number;
+  /** Wilson 95% interval of the accuracy, in % (accounts for small samples). */
+  ciLow: number;
+  ciHigh: number;
+}
+
+/** Wilson score interval (95% by default) for `successes` out of `n`, as 0..1. */
+export function wilsonInterval(
+  successes: number,
+  n: number,
+  z = 1.96,
+): { low: number; high: number } {
+  if (n <= 0) return { low: 0, high: 1 };
+  const p = successes / n;
+  const z2 = z * z;
+  const denom = 1 + z2 / n;
+  const center = (p + z2 / (2 * n)) / denom;
+  const half = (z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n))) / denom;
+  return { low: clamp(center - half), high: clamp(center + half) };
+}
+
+/** Below this many settled games a tier's calibration can't be judged. */
+export const MIN_TIER_SAMPLES = 20;
+
+export type CalibrationVerdict = 'small-sample' | 'overconfident' | 'underconfident' | 'calibrated';
+
+/**
+ * Is the tier's stated confidence consistent with its observed accuracy?
+ * Only flags over/under-confidence when the stated confidence falls OUTSIDE the
+ * accuracy's 95% Wilson interval — i.e. the gap is unlikely to be just noise.
+ */
+export function calibrationVerdict(e: TierEval): CalibrationVerdict {
+  if (e.n < MIN_TIER_SAMPLES) return 'small-sample';
+  if (e.avgConfidence > e.ciHigh) return 'overconfident';
+  if (e.avgConfidence < e.ciLow) return 'underconfident';
+  return 'calibrated';
 }
 
 /** Brier score for one prediction. */
@@ -32,6 +69,8 @@ function evalGroup(tier: TierEval['tier'], samples: Sample[]): TierEval {
   const brierSum = samples.reduce((sum, s) => sum + brier(s.probYes, s.outcome), 0);
   const predictedSum = samples.reduce((sum, s) => sum + s.probYes, 0);
   const yesCount = samples.filter((s) => s.outcome === 1).length;
+  const confidenceSum = samples.reduce((sum, s) => sum + Math.max(s.probYes, 1 - s.probYes), 0);
+  const ci = wilsonInterval(correct, n);
   return {
     tier,
     n,
@@ -39,6 +78,9 @@ function evalGroup(tier: TierEval['tier'], samples: Sample[]): TierEval {
     brier: round(safeDivide(brierSum, n, 0), 4),
     avgPredicted: round(safeDivide(predictedSum, n, 0) * 100, 1),
     actualRate: round(safeDivide(yesCount, n, 0) * 100, 1),
+    avgConfidence: round(safeDivide(confidenceSum, n, 0) * 100, 1),
+    ciLow: round(ci.low * 100, 1),
+    ciHigh: round(ci.high * 100, 1),
   };
 }
 

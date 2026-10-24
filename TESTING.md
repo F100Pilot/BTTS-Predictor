@@ -76,7 +76,10 @@ Após mudanças de UI/dados, verificar no browser (`npm run dev`):
 7. **Odds** — numa análise: "Outros mercados" mostra `@ odd · Valor` no 1X2 (e O/U
    quando disponível); o pop-up do Martingale vem com a odd preenchida. Em
    Definições → "Testar ligação": linha "Odds (mercados)" com ✓/✗ por mercado.
-8. **PWA** — instala, funciona offline, aviso de atualização.
+8. **Calibração** — Histórico → Desempenho: cada classificação mostra "acerto ±margem ·
+   prev. X% · veredicto" (amostra pequena com <20 jogos). Numa análise BTTS em que os
+   modelos discordam ≥15 p.p. aparece o aviso "Modelos em desacordo".
+9. **PWA** — instala, funciona offline, aviso de atualização.
 
 ---
 

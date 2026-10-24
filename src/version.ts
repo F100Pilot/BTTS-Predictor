@@ -7,10 +7,11 @@
  * for the version shown in the app (package.json keeps a 3-part semver mirror
  * for tooling, since npm requires valid semver).
  */
-export const APP_VERSION = '0.3.9.0';
+export const APP_VERSION = '0.3.10.0';
 
 /** Highlights of the current version, shown in the "what's new" popup on entry. */
 export const WHATS_NEW: string[] = [
+  'v0.3.10.0: Avaliação do modelo mais honesta. No Histórico, a tabela por classificação passa a comparar o acerto com a confiança que o modelo deu ao lado escolhido, com a margem de erro (±) e um veredicto: “calibrado ✓”, “otimista”, “pessimista” ou “amostra pequena” (menos de 20 jogos) — para não tirares conclusões de poucos jogos. Na análise de um jogo, se o modelo de BTTS e os golos esperados (Poisson) discordarem muito, aparece um aviso “Modelos em desacordo” para tratares essa previsão com mais cautela.',
   'v0.3.9.0: Odds das casas de apostas em todos os mercados. O 1X2 passa a mostrar as odds que já vinham na lista de jogos (sem pedidos extra à API) e o BTTS/Over-Under 2.5 são lidos ao abrir a análise. Com isso: o cartão “Outros mercados” mostra a odd e se há valor em cada seleção; os cartões de jogo mostram o “+X%” de valor também no 1X2; e o pop-up do Martingale já vem com a odd preenchida no mercado escolhido. Em Definições → Testar ligação há uma nova verificação das odds.',
   'v0.3.8.0: A página de Jogos passa a mostrar só previsões "Forte" ou "Muito Forte" (no mercado selecionado) — os jogos Média/Fraca ficam escondidos, para te focares no que interessa. É um novo filtro "Só previsões fortes", ligado por omissão, que podes desligar no menu de opções (ícone estrela) ou no aviso de lista vazia. Os jogos continuam a ser analisados na mesma; o filtro é só de visualização.',
   'v0.3.7.2: Correções de layout no telemóvel — a tabela "Desempenho do modelo" (Histórico) deixa de sair do ecrã (as colunas "Previsto méd." e "Real" ficam escondidas em ecrãs pequenos, aparecem em ecrãs maiores), e adicionámos uma salvaguarda geral para nada transbordar na horizontal.',

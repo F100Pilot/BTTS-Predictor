@@ -83,6 +83,9 @@ import {
 } from 'recharts';
 import {
   evaluate,
+  calibrationVerdict,
+  MIN_TIER_SAMPLES,
+  type CalibrationVerdict,
   reliabilityCurve,
   accuracyByConfidence,
   confidenceBandsOutcomes,
@@ -105,6 +108,14 @@ const EUR = (n: number): string => `€${n.toFixed(2)}`;
 /** Colour for an accuracy value (green good, amber so-so, red poor). */
 const accuracyColor = (acc: number): string =>
   acc >= 70 ? '#10b981' : acc >= 55 ? '#f59e0b' : '#ef4444';
+
+/** Label + colour of a tier's calibration verdict. */
+const VERDICT_META: Record<CalibrationVerdict, { label: string; className: string }> = {
+  'small-sample': { label: 'amostra pequena', className: 'text-muted-foreground' },
+  overconfident: { label: 'otimista', className: 'font-medium text-warning' },
+  underconfident: { label: 'pessimista', className: 'font-medium text-warning' },
+  calibrated: { label: 'calibrado ✓', className: 'font-medium text-success' },
+};
 
 /** Parse a "2-1" scoreline into [home, away] goals, or null when unparseable. */
 function parseScore(score: string | undefined): [number, number] | null {
@@ -709,32 +720,52 @@ export function HistoryPage() {
                               <TableRow>
                                 <TableHead>Classificação</TableHead>
                                 <TableHead>Amostras</TableHead>
-                                <TableHead>Acerto</TableHead>
-                                <TableHead className="hidden sm:table-cell">
-                                  Previsto méd.
-                                </TableHead>
+                                <TableHead>Acerto vs previsto</TableHead>
                                 <TableHead className="hidden sm:table-cell">Real (BTTS)</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {evaluation.byTier.map((t) => (
-                                <TableRow key={t.tier}>
-                                  <TableCell>
-                                    <TierBadge tier={t.tier as PredictionTier} />
-                                  </TableCell>
-                                  <TableCell>{t.n}</TableCell>
-                                  <TableCell className="font-semibold">{t.accuracy}%</TableCell>
-                                  <TableCell className="hidden text-muted-foreground sm:table-cell">
-                                    {t.avgPredicted}%
-                                  </TableCell>
-                                  <TableCell className="hidden text-muted-foreground sm:table-cell">
-                                    {t.actualRate}%
-                                  </TableCell>
-                                </TableRow>
-                              ))}
+                              {evaluation.byTier.map((t) => {
+                                const verdict = calibrationVerdict(t);
+                                const margin = Math.round(
+                                  Math.max(t.accuracy - t.ciLow, t.ciHigh - t.accuracy),
+                                );
+                                return (
+                                  <TableRow key={t.tier}>
+                                    <TableCell>
+                                      <TierBadge tier={t.tier as PredictionTier} />
+                                    </TableCell>
+                                    <TableCell>{t.n}</TableCell>
+                                    <TableCell>
+                                      <div className="whitespace-nowrap font-semibold tabular-nums">
+                                        {t.accuracy}%{' '}
+                                        <span className="text-xs font-normal text-muted-foreground">
+                                          ±{margin}
+                                        </span>
+                                      </div>
+                                      <div className="whitespace-nowrap text-xs text-muted-foreground">
+                                        prev. {t.avgConfidence}% ·{' '}
+                                        <span className={VERDICT_META[verdict].className}>
+                                          {VERDICT_META[verdict].label}
+                                        </span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="hidden text-muted-foreground sm:table-cell">
+                                      {t.actualRate}%
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
                             </TableBody>
                           </Table>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          "Acerto vs previsto" compara a taxa de acerto de cada classificação
+                          (±margem a 95%) com a confiança média que o modelo deu ao lado escolhido.
+                          Só aparece "otimista"/"pessimista" quando a diferença sai da margem — com
+                          menos de {MIN_TIER_SAMPLES} jogos a amostra é pequena demais para
+                          concluir.
+                        </p>
                         <div>
                           <p className="mb-1 text-xs font-medium text-muted-foreground">
                             Curva de fiabilidade (previsto vs real)
